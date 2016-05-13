@@ -56,6 +56,9 @@ namespace WebApi.RequestLogging
             bool safeMethod = (request.Method == HttpMethod.Get || request.Method == HttpMethod.Head ||
                                request.Method == HttpMethod.Options || request.Method == HttpMethod.Trace);
 
+            if (response.StatusCode == HttpStatusCode.InternalServerError)
+                return LogLevel.Fatal;
+
             return response.IsSuccessStatusCode
                 ? (safeMethod ? LogLevel.Debug : LogLevel.Info)
                 : (safeMethod ? LogLevel.Warn : LogLevel.Error);
