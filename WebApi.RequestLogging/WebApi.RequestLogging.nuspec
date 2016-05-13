@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+	<metadata>
+		<id>WebApi.RequestLogging</id>
+		<version>$version$</version>
+		<authors>Bastian Eicher</authors>
+		<copyright>1&amp;1 Internet SE</copyright>
+		<projectUrl>https://github.com/1and1/WebApi.RequestLogging</projectUrl>
+		<description>WebApi.RequestLogging allows you to easily add NLog-based request logging to Web API projects.</description>
+		<summary>NLog-based request logging for Web API</summary>
+		<tags>WebAPI request logging NLog</tags>
+	</metadata>
+</package>
