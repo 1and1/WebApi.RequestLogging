@@ -63,9 +63,9 @@ namespace WebApi.RequestLogging
 
         private async Task AppendContentAsync(HttpContent content, StringBuilder builder, string type)
         {
-            if (content == null) return;
+            string mediaType = content?.Headers.ContentType?.MediaType;
+            if (string.IsNullOrEmpty(mediaType)) return;
 
-            string mediaType = content.Headers.ContentType.MediaType;
             if (mediaType.StartsWith("text/") || mediaType.Contains("/xml") || mediaType.Contains("/json"))
             {
                 string body = await content.ReadAsStringAsync();
