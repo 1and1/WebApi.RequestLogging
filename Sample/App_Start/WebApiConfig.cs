@@ -9,7 +9,7 @@ namespace RequestLoggingSample
         {
             config.MapHttpAttributeRoutes();
 
-            config.EnableRequestLogging(sensitiveDataIndicator: "secret");
+            config.EnableRequestLogging(sensitiveKeywords: "secret");
 
             config.EnsureInitialized();
         }

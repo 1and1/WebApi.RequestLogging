@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -10,17 +12,17 @@ namespace WebApi.RequestLogging
     public class RequestLoggingHandler : DelegatingHandler
     {
         private readonly ILogger _logger;
-        private readonly string _sensitiveDataIndicator;
+        private readonly string[] _sensitiveKeywords;
 
         /// <summary>
         /// Creates a new logging handler.
         /// </summary>
         /// <param name="logger">The logger to write messages to. <c>null</c> to default to a logger named <c>ApiRequest</c>.</param>
-        /// <param name="sensitiveDataIndicator">A case-insensitive string to look for in request and response bodies to indicate sensitive data that should not be logged. <c>null</c> to disable this feature.</param>
-        public RequestLoggingHandler(ILogger logger = null, string sensitiveDataIndicator = null)
+        /// <param name="sensitiveKeywords">A list of case-insensitive strings to look for in request and response bodies to indicate sensitive data that should not be logged.</param>
+        public RequestLoggingHandler(ILogger logger, params string[] sensitiveKeywords)
         {
-            _logger = logger ?? LogManager.GetLogger("ApiRequest");
-            _sensitiveDataIndicator = sensitiveDataIndicator;
+            _logger = logger;
+            _sensitiveKeywords = sensitiveKeywords;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(
@@ -74,7 +76,7 @@ namespace WebApi.RequestLogging
                 string body = await content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(body))
                 {
-                    builder.AppendLine(ContainsSensitiveData(body)
+                    builder.AppendLine(ContainsSensitiveKeyword(body)
                         ? type + " body contains sensitive data"
                         : type + " body: " + body);
                 }
@@ -83,10 +85,10 @@ namespace WebApi.RequestLogging
                 builder.AppendLine(type + " body has MIME type: " + mediaType);
         }
 
-        private bool ContainsSensitiveData(string body)
+        private bool ContainsSensitiveKeyword(string body)
         {
-            if (_sensitiveDataIndicator == null) return false;
-            return body.IndexOf(_sensitiveDataIndicator, StringComparison.OrdinalIgnoreCase) >= 0;
+            if (_sensitiveKeywords == null) return false;
+            return _sensitiveKeywords.Any(x => body.IndexOf(x, StringComparison.OrdinalIgnoreCase) >= 0);
         }
     }
 }
