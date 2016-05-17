@@ -58,12 +58,12 @@ namespace WebApi.RequestLogging
             bool safeMethod = (request.Method == HttpMethod.Get || request.Method == HttpMethod.Head ||
                                request.Method == HttpMethod.Options || request.Method == HttpMethod.Trace);
 
-            if (response.StatusCode == HttpStatusCode.InternalServerError)
+            if (response.StatusCode >= HttpStatusCode.InternalServerError)
                 return LogLevel.Fatal;
 
-            return response.IsSuccessStatusCode
-                ? (safeMethod ? LogLevel.Debug : LogLevel.Info)
-                : (safeMethod ? LogLevel.Warn : LogLevel.Error);
+            return (response.StatusCode >= HttpStatusCode.BadRequest)
+                ? (safeMethod ? LogLevel.Warn : LogLevel.Error)
+                : (safeMethod ? LogLevel.Debug : LogLevel.Info);
         }
 
         private async Task AppendContentAsync(HttpContent content, StringBuilder builder, string type)
