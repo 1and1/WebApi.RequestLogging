@@ -37,7 +37,7 @@ namespace WebApi.RequestLogging
                 builder.AppendLine(request.Method + " " + request.RequestUri.PathAndQuery);
 
                 var context = request.GetRequestContext();
-                if (!string.IsNullOrEmpty(context.Principal.Identity.Name))
+                if (!string.IsNullOrEmpty(context.Principal?.Identity?.Name))
                     builder.AppendLine("User: " + context.Principal.Identity.Name);
 
                 if (!string.IsNullOrEmpty(request.Headers.From))
