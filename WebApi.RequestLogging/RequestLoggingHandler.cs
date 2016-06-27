@@ -55,15 +55,45 @@ namespace WebApi.RequestLogging
 
         private static LogLevel GetLogLevel(HttpRequestMessage request, HttpResponseMessage response)
         {
-            bool safeMethod = (request.Method == HttpMethod.Get || request.Method == HttpMethod.Head ||
-                               request.Method == HttpMethod.Options || request.Method == HttpMethod.Trace);
+            // 2xx
+            if (response.StatusCode < (HttpStatusCode)300)
+            {
+                return (request.Method == HttpMethod.Head || request.Method == HttpMethod.Get || request.Method == HttpMethod.Options || request.Method == HttpMethod.Trace)
+                    ? LogLevel.Debug
+                    : LogLevel.Info;
+            }
 
-            if (response.StatusCode >= HttpStatusCode.InternalServerError)
-                return LogLevel.Fatal;
+            // 3xx, 401
+            if (response.StatusCode < HttpStatusCode.BadRequest || response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                return (request.Method == HttpMethod.Head || request.Method == HttpMethod.Get || request.Method == HttpMethod.Options || request.Method == HttpMethod.Trace)
+                    ? LogLevel.Info
+                    : LogLevel.Warn;
+            }
 
-            return (response.StatusCode >= HttpStatusCode.BadRequest)
-                ? (safeMethod ? LogLevel.Warn : LogLevel.Error)
-                : (safeMethod ? LogLevel.Debug : LogLevel.Info);
+            // 403, 404, 410
+            if (response.StatusCode == HttpStatusCode.Forbidden || response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Gone)
+            {
+                if (request.Method == HttpMethod.Head) return LogLevel.Info;
+                return (request.Method == HttpMethod.Get || request.Method == HttpMethod.Options || request.Method == HttpMethod.Trace)
+                    ? LogLevel.Warn
+                    : LogLevel.Error;
+            }
+
+            // 416
+            if (response.StatusCode == HttpStatusCode.RequestedRangeNotSatisfiable)
+            {
+                return (request.Method == HttpMethod.Head || request.Method == HttpMethod.Get || request.Method == HttpMethod.Options || request.Method == HttpMethod.Trace)
+                    ? LogLevel.Info
+                    : LogLevel.Error;
+            }
+
+            // Other 4xx
+            if (response.StatusCode < HttpStatusCode.InternalServerError)
+                return LogLevel.Error;
+
+            // 5xx
+            return LogLevel.Fatal;
         }
 
         private async Task AppendContentAsync(HttpContent content, StringBuilder builder, string type)

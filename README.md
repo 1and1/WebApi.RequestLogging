@@ -15,15 +15,29 @@ Add `config.EnableRequestLogging();` to your `WebApiConfig.cs` file.
 
 ## Log levels
 
-WebApi.RequestLogging selects log levels depending on the HTTP status code and the HTTP method.
+WebApi.RequestLogging selects log levels depending on the HTTP status code and the HTTP method:
 
-| Status code | Safe methods | Unsafe methods |
-| ----------- | ------------ | -------------- |
-| 2xx, 3xx    | Debug        | Info           |
-| 4xx         | Warn         | Error          |
-| 5xx         | Fatal        | Fatal          |
-
-Safe methods are `GET`, `HEAD`, `OPTIONS` and `TRACE`. All other methods such as `POST`, `PUT` and `DELETE` are considered unsafe.
+<table>
+  <tr>
+    <th>Status codes</th>  <th>HEAD</th>  <th>GET, OPTIONS, TRACE</th>  <th>DELETE</th>  <th>POST, PUT</th>
+  </tr>
+  <tr>
+    <td>2xx</td>           <td colspan="2">Debug</td>                   <td colspan="2">Info</td>
+  </tr>
+  <tr>
+    <td>3xx, 401</td>      <td colspan="2">Info</td>                    <td colspan="2">Warn</td>
+  </tr>
+  <tr>
+    <td>403, 404, 410</td> <td>Info</td>  <td colspan="2">Warn</td>                      <td>Error</td>
+  </tr>
+    <td>416</td>           <td colspan="2">Info</td>                    <td colspan="2">Error</td>
+  <tr>
+    <td>Other 4xx</td>     <td colspan="4">Error</td>
+  </tr>
+  <tr>
+    <td>5xx</td>           <td colspan="4">Fatal</td>
+  </tr>
+</table>
 
 
 
