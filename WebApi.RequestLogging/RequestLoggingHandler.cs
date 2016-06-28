@@ -58,6 +58,10 @@ namespace WebApi.RequestLogging
 
         private static LogLevel GetLogLevel(HttpStatusCode statusCode, HttpMethod method)
         {
+            // 1xx
+            if (statusCode < HttpStatusCode.OK)
+                return LogLevel.Trace;
+
             // 2xx
             if (statusCode < (HttpStatusCode)300)
             {
