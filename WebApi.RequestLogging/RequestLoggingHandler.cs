@@ -28,13 +28,16 @@ namespace WebApi.RequestLogging
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            // NOTE: Capture HTTP method before passing through in case other handlers change it
+            var method = request.Method;
             var response = await base.SendAsync(request, cancellationToken);
-            var level = GetLogLevel(request, response);
+            var statusCode = response.StatusCode;
 
-            if (_logger.IsEnabled(level))
+            var logLevel = GetLogLevel(statusCode, method);
+            if (_logger.IsEnabled(logLevel))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine(request.Method + " " + request.RequestUri.PathAndQuery);
+                builder.AppendLine(method + " " + request.RequestUri.PathAndQuery);
 
                 var context = request.GetRequestContext();
                 if (!string.IsNullOrEmpty(context.Principal?.Identity?.Name))
@@ -44,52 +47,52 @@ namespace WebApi.RequestLogging
                     builder.AppendLine("From: " + request.Headers.From);
 
                 await AppendContentAsync(request.Content, builder, "Request");
-                builder.AppendLine("Response code: " + response.StatusCode);
+                builder.AppendLine("Response code: " + statusCode);
                 await AppendContentAsync(response.Content, builder, "Response");
 
-                _logger.Log(level, message: builder.ToString().TrimEnd(Environment.NewLine.ToCharArray()));
+                _logger.Log(logLevel, message: builder.ToString().TrimEnd(Environment.NewLine.ToCharArray()));
             }
 
             return response;
         }
 
-        private static LogLevel GetLogLevel(HttpRequestMessage request, HttpResponseMessage response)
+        private static LogLevel GetLogLevel(HttpStatusCode statusCode, HttpMethod method)
         {
             // 2xx
-            if (response.StatusCode < (HttpStatusCode)300)
+            if (statusCode < (HttpStatusCode)300)
             {
-                return (request.Method == HttpMethod.Head || request.Method == HttpMethod.Get || request.Method == HttpMethod.Options || request.Method == HttpMethod.Trace)
+                return (method == HttpMethod.Head || method == HttpMethod.Get || method == HttpMethod.Options || method == HttpMethod.Trace)
                     ? LogLevel.Debug
                     : LogLevel.Info;
             }
 
             // 3xx, 401
-            if (response.StatusCode < HttpStatusCode.BadRequest || response.StatusCode == HttpStatusCode.Unauthorized)
+            if (statusCode < HttpStatusCode.BadRequest || statusCode == HttpStatusCode.Unauthorized)
             {
-                return (request.Method == HttpMethod.Head || request.Method == HttpMethod.Get || request.Method == HttpMethod.Options || request.Method == HttpMethod.Trace)
+                return (method == HttpMethod.Head || method == HttpMethod.Get || method == HttpMethod.Options || method == HttpMethod.Trace)
                     ? LogLevel.Info
                     : LogLevel.Warn;
             }
 
             // 403, 404, 410
-            if (response.StatusCode == HttpStatusCode.Forbidden || response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Gone)
+            if (statusCode == HttpStatusCode.Forbidden || statusCode == HttpStatusCode.NotFound || statusCode == HttpStatusCode.Gone)
             {
-                if (request.Method == HttpMethod.Head) return LogLevel.Info;
-                return (request.Method == HttpMethod.Get || request.Method == HttpMethod.Options || request.Method == HttpMethod.Trace)
+                if (method == HttpMethod.Head) return LogLevel.Info;
+                return (method == HttpMethod.Get || method == HttpMethod.Options || method == HttpMethod.Trace)
                     ? LogLevel.Warn
                     : LogLevel.Error;
             }
 
             // 416
-            if (response.StatusCode == HttpStatusCode.RequestedRangeNotSatisfiable)
+            if (statusCode == HttpStatusCode.RequestedRangeNotSatisfiable)
             {
-                return (request.Method == HttpMethod.Head || request.Method == HttpMethod.Get || request.Method == HttpMethod.Options || request.Method == HttpMethod.Trace)
+                return (method == HttpMethod.Head || method == HttpMethod.Get || method == HttpMethod.Options || method == HttpMethod.Trace)
                     ? LogLevel.Info
                     : LogLevel.Error;
             }
 
             // Other 4xx
-            if (response.StatusCode < HttpStatusCode.InternalServerError)
+            if (statusCode < HttpStatusCode.InternalServerError)
                 return LogLevel.Error;
 
             // 5xx
