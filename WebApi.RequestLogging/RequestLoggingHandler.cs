@@ -65,7 +65,7 @@ namespace WebApi.RequestLogging
             // 2xx
             if (statusCode < (HttpStatusCode)300)
             {
-                return (method == HttpMethod.Head || method == HttpMethod.Get || method == HttpMethod.Options || method == HttpMethod.Trace)
+                return (method == HttpMethod.Head || method == HttpMethod.Get || method == HttpMethod.Options)
                     ? LogLevel.Debug
                     : LogLevel.Info;
             }
@@ -73,7 +73,7 @@ namespace WebApi.RequestLogging
             // 3xx, 401
             if (statusCode < HttpStatusCode.BadRequest || statusCode == HttpStatusCode.Unauthorized)
             {
-                return (method == HttpMethod.Head || method == HttpMethod.Get || method == HttpMethod.Options || method == HttpMethod.Trace)
+                return (method == HttpMethod.Head || method == HttpMethod.Get || method == HttpMethod.Options)
                     ? LogLevel.Info
                     : LogLevel.Warn;
             }
@@ -82,7 +82,7 @@ namespace WebApi.RequestLogging
             if (statusCode == HttpStatusCode.Forbidden || statusCode == HttpStatusCode.NotFound || statusCode == HttpStatusCode.Gone)
             {
                 if (method == HttpMethod.Head) return LogLevel.Info;
-                return (method == HttpMethod.Get || method == HttpMethod.Options || method == HttpMethod.Trace)
+                return (method == HttpMethod.Get || method == HttpMethod.Options || method == HttpMethod.Delete)
                     ? LogLevel.Warn
                     : LogLevel.Error;
             }
@@ -90,7 +90,7 @@ namespace WebApi.RequestLogging
             // 416
             if (statusCode == HttpStatusCode.RequestedRangeNotSatisfiable)
             {
-                return (method == HttpMethod.Head || method == HttpMethod.Get || method == HttpMethod.Options || method == HttpMethod.Trace)
+                return (method == HttpMethod.Head || method == HttpMethod.Get || method == HttpMethod.Options)
                     ? LogLevel.Info
                     : LogLevel.Error;
             }

@@ -19,21 +19,21 @@ WebApi.RequestLogging selects log levels depending on the HTTP status code and t
 
 <table>
   <tr>
-    <th>Status codes</th>  <th>HEAD</th>  <th>GET, OPTIONS, TRACE</th>  <th>DELETE</th>  <th>POST, PUT</th>
+    <th>Status codes</th>  <th>HEAD</th>  <th>GET, OPTIONS</th>      <th>DELETE</th>  <th>POST, PUT</th>
   </tr>
   <tr>
     <td>1xx</td>           <td colspan="4">Trace</td>
   </tr>
   <tr>
-    <td>2xx</td>           <td colspan="2">Debug</td>                   <td colspan="2">Info</td>
+    <td>2xx</td>           <td colspan="2">Debug</td>                <td colspan="2">Info</td>
   </tr>
   <tr>
-    <td>3xx, 401</td>      <td colspan="2">Info</td>                    <td colspan="2">Warn</td>
+    <td>3xx, 401</td>      <td colspan="2">Info</td>                 <td colspan="2">Warn</td>
   </tr>
   <tr>
-    <td>403, 404, 410</td> <td>Info</td>  <td colspan="2">Warn</td>                      <td>Error</td>
+    <td>403, 404, 410</td> <td>Info</td>  <td colspan="2">Warn</td>                   <td>Error</td>
   </tr>
-    <td>416</td>           <td colspan="2">Info</td>                    <td colspan="2">Error</td>
+    <td>416</td>           <td colspan="2">Info</td>                 <td colspan="2">Error</td>
   <tr>
     <td>Other 4xx</td>     <td colspan="4">Error</td>
   </tr>
