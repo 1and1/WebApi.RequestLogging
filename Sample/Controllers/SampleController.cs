@@ -13,8 +13,9 @@ namespace RequestLoggingSample.Controllers
         }
 
         [HttpPost, Route("success")]
-        public void PostSuccess([FromBody] string input)
+        public string PostSuccess([FromBody] string input)
         {
+            return "Some content";
         }
 
         [HttpDelete, Route("success")]
@@ -23,7 +24,7 @@ namespace RequestLoggingSample.Controllers
         }
 
         [HttpGet, Route("fail")]
-        public string GetFail()
+        public void GetFail()
         {
             throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "Mock error"));
         }
