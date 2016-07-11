@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -110,6 +111,10 @@ namespace WebApi.RequestLogging
 
             if (mediaType.StartsWith("text/") || mediaType.Contains("/xml") || mediaType.Contains("/json"))
             {
+                // Try to rewind stream
+                var stream = await content.ReadAsStreamAsync();
+                if (stream.CanSeek) stream.Seek(0, SeekOrigin.Begin);
+
                 string body = await content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(body))
                 {
