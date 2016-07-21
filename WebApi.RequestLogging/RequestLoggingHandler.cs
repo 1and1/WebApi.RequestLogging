@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -113,7 +112,7 @@ namespace WebApi.RequestLogging
             {
                 // Try to rewind stream
                 var stream = await content.ReadAsStreamAsync();
-                if (stream.CanSeek) stream.Seek(0, SeekOrigin.Begin);
+                if (stream.CanSeek) stream.Position = 0;
 
                 string body = await content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(body))
