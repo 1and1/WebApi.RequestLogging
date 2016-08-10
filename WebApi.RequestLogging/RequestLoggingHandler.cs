@@ -30,6 +30,11 @@ namespace WebApi.RequestLogging
         {
             // NOTE: Capture HTTP method before passing through in case other handlers change it
             var method = request.Method;
+
+            // NOTE: Buffer text content before passing through to avoid unseekable streams later on
+            if (request.Content != null && IsXmlOrJson(request.Content))
+                await request.Content.LoadIntoBufferAsync();
+
             var response = await base.SendAsync(request, cancellationToken);
             var statusCode = response.StatusCode;
 
@@ -46,14 +51,45 @@ namespace WebApi.RequestLogging
                 if (!string.IsNullOrEmpty(request.Headers.From))
                     builder.AppendLine("From: " + request.Headers.From);
 
-                await AppendContentAsync(request.Content, builder, "Request");
+                string requestBody = await ReadBodyAsync(request.Content);
+                if (requestBody != null)
+                    builder.AppendLine("Request body: " + requestBody);
+
                 builder.AppendLine("Response code: " + statusCode);
-                await AppendContentAsync(response.Content, builder, "Response");
+
+                var responseBody = await ReadBodyAsync(response.Content);
+                if (responseBody != null)
+                    builder.AppendLine("Response body: " + responseBody);
 
                 _logger.Log(logLevel, message: builder.ToString().TrimEnd(Environment.NewLine.ToCharArray()));
             }
 
             return response;
+        }
+
+        private async Task<string> ReadBodyAsync(HttpContent content)
+        {
+            if (content == null) return null;
+            if (IsXmlOrJson(content))
+            {
+                var stream = await content.ReadAsStreamAsync();
+                if (stream.CanSeek) stream.Position = 0;
+                string body = await content.ReadAsStringAsync();
+                if (stream.CanSeek) stream.Position = 0;
+
+                if (string.IsNullOrEmpty(body))
+                    return null;
+                else if (_sensitiveKeywords.Any(x => body.IndexOf(x, StringComparison.OrdinalIgnoreCase) >= 0))
+                    return "contains sensitive data";
+                else return body;
+            }
+            else  return content.Headers.ContentType?.MediaType;
+        }
+
+        private static bool IsXmlOrJson(HttpContent content)
+        {
+            string type = content.Headers.ContentType?.MediaType;
+            return type != null && (type.Contains("/xml") || type.Contains("/json"));
         }
 
         private static LogLevel GetLogLevel(HttpStatusCode statusCode, HttpMethod method)
@@ -101,35 +137,6 @@ namespace WebApi.RequestLogging
 
             // 5xx
             return LogLevel.Fatal;
-        }
-
-        private async Task AppendContentAsync(HttpContent content, StringBuilder builder, string type)
-        {
-            string mediaType = content?.Headers.ContentType?.MediaType;
-            if (string.IsNullOrEmpty(mediaType)) return;
-
-            if (mediaType.StartsWith("text/") || mediaType.Contains("/xml") || mediaType.Contains("/json"))
-            {
-                // Try to rewind stream
-                var stream = await content.ReadAsStreamAsync();
-                if (stream.CanSeek) stream.Position = 0;
-
-                string body = await content.ReadAsStringAsync();
-                if (!string.IsNullOrEmpty(body))
-                {
-                    builder.AppendLine(ContainsSensitiveKeyword(body)
-                        ? type + " body contains sensitive data"
-                        : type + " body: " + body);
-                }
-            }
-            else
-                builder.AppendLine(type + " body has MIME type: " + mediaType);
-        }
-
-        private bool ContainsSensitiveKeyword(string body)
-        {
-            if (_sensitiveKeywords == null) return false;
-            return _sensitiveKeywords.Any(x => body.IndexOf(x, StringComparison.OrdinalIgnoreCase) >= 0);
         }
     }
 }
