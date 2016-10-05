@@ -45,7 +45,7 @@ namespace WebApi.RequestLogging
                 builder.AppendLine(method + " " + request.RequestUri.PathAndQuery);
 
                 var range = request.Headers.Range?.Ranges.FirstOrDefault();
-                if (range != null) builder.AppendLine(range.ToString());
+                if (range != null) builder.AppendLine("Range: " + range);
 
                 var context = request.GetRequestContext();
                 if (!string.IsNullOrEmpty(context.Principal?.Identity?.Name))
