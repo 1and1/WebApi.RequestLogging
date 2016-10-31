@@ -130,7 +130,7 @@ namespace WebApi.RequestLogging
             if (statusCode == HttpStatusCode.RequestedRangeNotSatisfiable)
             {
                 return (method == HttpMethod.Head || method == HttpMethod.Get || method == HttpMethod.Options)
-                    ? LogLevel.Info
+                    ? LogLevel.Trace
                     : LogLevel.Error;
             }
 

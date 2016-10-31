@@ -31,9 +31,9 @@ WebApi.RequestLogging selects log levels depending on the HTTP status code and t
     <td>3xx, 401</td>      <td colspan="2">Info</td>                 <td colspan="2">Warn</td>
   </tr>
   <tr>
-    <td>403, 404, 410</td> <td>Info</td>  <td colspan="2">Warn</td>                   <td>Error</td>
+    <td>403, 404, 410</td> <td>Info</td>  <td colspan="2">Warn</td>  <td>Error</td>
   </tr>
-    <td>416</td>           <td colspan="2">Info</td>                 <td colspan="2">Error</td>
+    <td>416</td>           <td colspan="2">Trace</td>                <td colspan="2">Error</td>
   <tr>
     <td>Other 4xx</td>     <td colspan="4">Error</td>
   </tr>
