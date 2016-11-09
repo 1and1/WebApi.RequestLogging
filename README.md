@@ -19,7 +19,7 @@ WebApi.RequestLogging selects log levels depending on the HTTP status code and t
 
 <table>
   <tr>
-    <th>Status codes</th>  <th>HEAD</th>  <th>GET, OPTIONS</th>      <th>DELETE</th>  <th>POST, PUT</th>
+    <th>Status codes</th>  <th>HEAD</th>  <th>GET, OPTIONS</th>      <th>DELETE</th>  <th>POST, PUT, PATCH</th>
   </tr>
   <tr>
     <td>1xx</td>           <td colspan="4">Trace</td>
